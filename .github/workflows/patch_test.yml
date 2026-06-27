@@ -1,0 +1,40 @@
+name: Test patched branch
+
+on:
+  push:
+    branches:
+      - 'auto-patch/**'   # only fires on auto-patch/* branches
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt   # or npm install
+
+      - name: Run full test suite
+        id: tests
+        run: pytest --tb=short -q
+
+      - name: Auto-merge on success
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          python patcher/pr_manager.py --action merge \
+            --branch ${{ github.ref_name }}
+
+      - name: Comment failure reason on PR
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          python patcher/pr_manager.py --action comment-fail \
+            --branch ${{ github.ref_name }}
