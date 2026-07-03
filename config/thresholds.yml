@@ -1,0 +1,23 @@
+# thresholds.yml
+#
+# Defines what happens per severity level when a CVE is found.
+#
+# auto_patch: true   -> classifier marks it actionable (patcher will open a PR)
+# auto_patch: false  -> CVE is logged/alerted but not auto-patched
+#
+# A CVE is only ever actionable if BOTH:
+#   1. its severity has auto_patch: true below, AND
+#   2. Trivy reports a non-empty FixedVersion (handled in cve_classifier.py,
+#      not configurable here — there's never a safe upgrade to apply otherwise)
+
+severities:
+  CRITICAL:
+    auto_patch: true
+  HIGH:
+    auto_patch: true
+  MEDIUM:
+    auto_patch: false
+  LOW:
+    auto_patch: false
+  UNKNOWN:
+    auto_patch: false

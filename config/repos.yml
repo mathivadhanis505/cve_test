@@ -1,0 +1,21 @@
+# repos.yml
+#
+# List of repos the nightly scan should cover. `ecosystem` is a hint for
+# which manifest file to look for; a repo can list more than one if it's
+# polyglot (e.g. a Python backend + JS frontend in the same repo).
+#
+# test_command is what patch_test.yml runs after a version bump, before
+# the PR is allowed to auto-merge.
+
+repos:
+  - name: devops-project
+    owner: DevClubIIITDM
+    ecosystems:
+      - npm
+    test_command: "npm test"
+
+  - name: sre-bot
+    owner: DevClubIIITDM
+    ecosystems:
+      - npm
+    test_command: "npm test"
