@@ -37,10 +37,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Test database connection
+        env:
+          DATABASE_URL: ${{ secrets.POSTGRES_URL }}
+        run: |
+          python -c "
+          from sqlalchemy import text
+          from db.session import get_session
+
+          with get_session() as db:
+              print(db.execute(text('SELECT 1')).scalar())
+          "
+
       - name: Run scanner
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
-          DB_URL: ${{ secrets.POSTGRES_URL }}
+          DATABASE_URL: ${{ secrets.POSTGRES_URL }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           PYTHONPATH: ${{ github.workspace }}
         run: |
