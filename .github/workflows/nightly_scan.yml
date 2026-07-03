@@ -2,8 +2,8 @@ name: Nightly vulnerability scan
 
 on:
   schedule:
-    - cron: '0 2 * * *'     # 2am UTC every night
-  workflow_dispatch:         # manual trigger for testing
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   scan-and-patch:
@@ -15,26 +15,31 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout target repository
+        uses: actions/checkout@v4
         with:
           repository: ${{ matrix.repo }}
           token: ${{ secrets.GH_PAT }}
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install Trivy
         run: |
-          wget -qO- https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux_64bit.tar.gz | tar xz
-          sudo mv trivy /usr/local/bin/
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
+          trivy --version
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run scanner and patcher
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           DB_URL: ${{ secrets.POSTGRES_URL }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        run: python scanner/trivy_runner.py --repo ${{ matrix.repo }}
+        run: |
+          python scanner/trivy_runner.py --repo "${{ matrix.repo }}"
