@@ -11,6 +11,7 @@ from patcher.pr_manager import pr_open
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-id", type=int, required=True)
+    parser.add_argument("--repo", required=True)
     args = parser.parse_args()
 
     cves = get_unpatched_cves(args.run_id)
@@ -23,7 +24,7 @@ def main():
             continue
 
         data = {
-            "repo": "mathivadhanis505/sample-vuln-python",
+            "repo": args.repo,
             "package": cve.package,
             "fix_version": cve.fixed_version.split(",")[0].strip(),
             "installed_version": cve.installed_version,
