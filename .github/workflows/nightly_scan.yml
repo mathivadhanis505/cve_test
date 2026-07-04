@@ -22,12 +22,20 @@ jobs:
 
             cd /home/ubuntu/devops-project
 
+            # pull latest code from correct branch
             git pull origin person4
 
+            # activate venv
             source venv/bin/activate
 
+            # expose GitHub token for patcher
+            export GITHUB_TOKEN=${{ secrets.GH_PAT }}
+
+            # run scanner
             python -m scanner.trivy_runner --repo sample-vuln-python
 
+            # get latest run id safely
             RUN_ID=$(python -c "from db.crud import get_all_cves; cves = get_all_cves(); print(cves[-1].run_id if cves else 'no-run')")
 
+            # run patcher
             python -m patcher.main --run-id "$RUN_ID"
