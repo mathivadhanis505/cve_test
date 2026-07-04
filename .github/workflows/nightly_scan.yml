@@ -20,7 +20,7 @@ jobs:
           script: |
             cd /home/ubuntu/devops-project
 
-            git pull origin main
+            git pull origin person4
 
             source venv/bin/activate
 
