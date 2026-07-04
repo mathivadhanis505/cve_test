@@ -1,0 +1,35 @@
+name: Nightly vulnerability scan
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  scan-and-patch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute scanner on EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            cd /home/ubuntu/devops-project
+
+            git pull origin main
+
+            source venv/bin/activate
+
+            python -m scanner.trivy_runner --repo sample-vuln-python
+
+            RUN_ID=$(python - <<'PY'
+from db.crud import get_all_cves
+print(get_all_cves()[-1].run_id)
+PY
+            )
+
+            python -m patcher.main --run-id $RUN_ID
