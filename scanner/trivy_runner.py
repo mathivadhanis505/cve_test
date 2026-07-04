@@ -12,7 +12,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from scanner.ecosystem import TRIVY_TYPE_MAP
-
+from db.crud import (
+    create_run,
+    increment_repos_scanned,
+    create_cve,
+    finish_run,
+)
 
 class TrivyExecutionError(RuntimeError):
     pass
@@ -90,5 +95,23 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    run = create_run()
+
     results = run_trivy_scan(args.repo)
+
+    increment_repos_scanned(run.id)
+
+    for vuln in results:
+        create_cve(
+            repo=args.repo,
+            package=vuln.pkg_name,
+            severity=vuln.severity,
+            installed_version=vuln.installed_version,
+            fixed_version=vuln.fixed_version,
+            run_id=run.id,
+        )
+
+    finish_run(run.id)
+
+    print(f"Run {run.id} completed")
     print(f"Found {len(results)} vulnerabilities")

@@ -3,3 +3,4 @@ note
 venv/
 __pycache__/
 *.pyc
+sample-vuln-python/
