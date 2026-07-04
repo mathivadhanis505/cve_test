@@ -13,10 +13,11 @@ def lambda_handler(event=None, context=None):
     """
 
     logging.info("Nightly dependency scan started.")
-    
-     Call scanner/trivy_runner.py
-     Call patcher modules
-     Call notify/slack_digest.py
+
+    # TODO:
+    # Call scanner/trivy_runner.py
+    # Call patcher modules
+    # Call notify/slack_digest.py
 
     return {
         "statusCode": 200,
