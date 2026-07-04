@@ -18,6 +18,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
+            set -e
+
             cd /home/ubuntu/devops-project
 
             git pull origin person4
@@ -26,10 +28,6 @@ jobs:
 
             python -m scanner.trivy_runner --repo sample-vuln-python
 
-            RUN_ID=$(python - <<'PY'
-from db.crud import get_all_cves
-print(get_all_cves()[-1].run_id)
-PY
-            )
+            RUN_ID=$(python -c "from db.crud import get_all_cves; cves = get_all_cves(); print(cves[-1].run_id if cves else 'no-run')")
 
-            python -m patcher.main --run-id $RUN_ID
+            python -m patcher.main --run-id "$RUN_ID"
