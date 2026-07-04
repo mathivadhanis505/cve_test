@@ -39,5 +39,4 @@ if __name__ == "__main__":
     message = build_message()
     print(message)
 
-    # I will remove the comment later after Slack webhook is ready
-    # send_slack_message(message) 
+    send_slack_message(message) 
