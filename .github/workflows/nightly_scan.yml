@@ -15,53 +15,29 @@ jobs:
       fail-fast: false
 
     steps:
-      - name: Checkout target repository
-        uses: actions/checkout@v4
+      - name: Execute scan on EC2
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          repository: ${{ matrix.repo }}
-          token: ${{ secrets.GH_PAT }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+          script: |
+            cd ~/devops-project
 
-      - name: Install Trivy
-        run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-            | sudo sh -s -- -b /usr/local/bin
-          trivy --version
+            source venv/bin/activate
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+            export DATABASE_URL="${{ secrets.POSTGRES_URL }}"
+            export GITHUB_TOKEN="${{ secrets.GH_PAT }}"
+            export GH_TOKEN="${{ secrets.GH_PAT }}"
+            export SLACK_WEBHOOK="${{ secrets.SLACK_WEBHOOK }}"
 
-      - name: Test database connection
-        env:
-          DATABASE_URL: ${{ secrets.POSTGRES_URL }}
-        run: |
-          python -c "
-          from sqlalchemy import text
-          from db.session import get_session
+            python -m scanner.trivy_runner \
+              --repo sample-vuln-python
 
-          with get_session() as db:
-              print(db.execute(text('SELECT 1')).scalar())
-          "
+            RUN_ID=$(cat run_id.txt)
 
-      - name: Run scanner
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
-          DATABASE_URL: ${{ secrets.POSTGRES_URL }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          PYTHONPATH: ${{ github.workspace }}
-        run: |
-          python -m scanner.trivy_runner --repo "${{ github.workspace }}"
+            python -m patcher.main \
+              --run-id "$RUN_ID" \
+              --repo "${{ matrix.repo }}"
 
-      # TODO:
-      # Once scanner returns the generated run_id,
-      # invoke:
-      #
-      # python -m patcher.main \
-      #   --run-id <RUN_ID> \
-      #   --repo "${{ matrix.repo }}"

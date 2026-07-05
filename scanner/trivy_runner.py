@@ -19,6 +19,7 @@ from db.crud import (
     finish_run,
 )
 
+
 class TrivyExecutionError(RuntimeError):
     pass
 
@@ -112,6 +113,9 @@ if __name__ == "__main__":
         )
 
     finish_run(run.id)
+
+    with open("run_id.txt", "w") as f:
+        f.write(str(run.id))
 
     print(f"Run {run.id} completed")
     print(f"Found {len(results)} vulnerabilities")
