@@ -32,12 +32,23 @@ jobs:
             export GH_TOKEN="${{ secrets.GH_PAT }}"
             export SLACK_WEBHOOK="${{ secrets.SLACK_WEBHOOK }}"
 
+            REPO="${{ matrix.repo }}"
+            REPO_NAME=$(basename "$REPO")
+
+            # Clone or update the target repository
+            if [ ! -d "$REPO_NAME/.git" ]; then
+              git clone "https://github.com/$REPO.git" "$REPO_NAME"
+            else
+              cd "$REPO_NAME"
+              git pull origin main
+              cd ..
+            fi
+
             python -m scanner.trivy_runner \
-              --repo sample-vuln-python
+              --repo "$REPO_NAME"
 
             RUN_ID=$(cat run_id.txt)
 
             python -m patcher.main \
               --run-id "$RUN_ID" \
-              --repo "${{ matrix.repo }}"
-
+              --repo "$REPO"
