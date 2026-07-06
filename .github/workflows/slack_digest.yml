@@ -10,17 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - name: Execute Slack digest on EC2
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          python-version: "3.11"
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
+          script: |
+            cd ~/devops-project
 
-      - name: Send Slack digest
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          DATABASE_URL: ${{ secrets.POSTGRES_URL }}
-        run: python -m notify.slack_digest
+            source venv/bin/activate
+
+            export DATABASE_URL="${{ secrets.POSTGRES_URL }}"
+            export SLACK_WEBHOOK="${{ secrets.SLACK_WEBHOOK }}"
+
+            python -m notify.slack_digest
