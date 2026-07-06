@@ -24,4 +24,4 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           DB_URL: ${{ secrets.POSTGRES_URL }}
-        run: python notify/slack_digest.py
+        run: python -m notify.slack_digest
