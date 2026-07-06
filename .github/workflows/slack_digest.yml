@@ -3,7 +3,6 @@ name: Daily Slack Digest
 on:
   schedule:
     - cron: '0 7 * * *'   # 7am UTC every day
-
   workflow_dispatch:
 
 jobs:
@@ -23,5 +22,5 @@ jobs:
       - name: Send Slack digest
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          DB_URL: ${{ secrets.POSTGRES_URL }}
+          DATABASE_URL: ${{ secrets.POSTGRES_URL }}
         run: python -m notify.slack_digest
