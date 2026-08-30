@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
-            cd ~/devops-project
+            cd ~/cve_test
 
             source venv/bin/activate
 
