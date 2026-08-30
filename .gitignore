@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 sample-vuln-python/
 run_id.txt
+sample_repo/
